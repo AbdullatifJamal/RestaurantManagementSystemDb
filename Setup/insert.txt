@@ -1,0 +1,77 @@
+INSERT INTO Category  VALUES ('Appetizers'),('Main Course'),('Desserts'),('Beverages'),('Salads');
+
+INSERT INTO MenuItems (CreatedBy, UpdatedBy, [Name], CategoryId, Price, IsAvailable, Discount)
+VALUES 
+    ('Admin', NULL, 'Cheese Nachos', 1, 4.99, 1, 0.50),  
+    ('Admin', NULL, 'Grilled Chicken', 2, 12.99, 1, 1.00), 
+    ('Admin', NULL, 'Chocolate Cake', 3, 6.50, 1, 0.75), 
+    ('Admin', NULL, 'Fresh Orange Juice', 4, 3.99, 1, 0.00), 
+    ('Admin', NULL, 'Caesar Salad', 5, 5.99, 1, 0.25);
+
+INSERT INTO Person (CreatedBy, updatedBy, personRoleId, [name], email, [password], phone)
+VALUES 
+    ('Admin', NULL, 1, 'John Doe', 'admin@example.com', 'Admin@123', '1234567890'),
+    ('Admin', NULL, 2, 'Alice Smith', 'chef@example.com', 'Chef@123', '0987654321'),
+    ('Admin', NULL, 2, 'Bob Johnson', 'waiter@example.com', 'Waiter@123', '1122334455'),
+    ('Admin', NULL, 3, 'Sarah Brown', 'cashier@example.com', 'Cashier@123', '5566778899'),
+    ('Admin', NULL, 3, 'Emily Davis', 'customer@example.com', 'Customer@123', '6677889900');
+
+INSERT INTO PersonRole  VALUES ('Admin'), ('Staff'), ('Customer');
+
+
+INSERT INTO Reservations (CreatedBy, updatedBy, PersonId, CustomerName, ContactDetails, NumberOfGuests, TableNumber, ReservationDate, [Status])
+VALUES 
+    ('Admin', NULL, 1, 'Emily Davis', '6677889900', 4, 12, '2025-03-05 19:00:00', 'Pending'),
+    ('Admin', NULL, 4, 'John Smith', '9988776655', 2, 5, '2025-03-06 20:00:00', 'Confirmed'),
+    ('Admin', NULL, 5, 'Sophia Wilson', '1122334455', 6, 8, '2025-03-07 18:30:00', 'Cancelled'),
+    ('Admin', NULL, 5, 'Michael Brown', '5566778899', 3, 3, '2025-03-08 21:00:00', 'Pending'),
+    ('Admin', NULL, 5, 'Olivia Taylor', '4433221100', 5, 7, '2025-03-09 17:45:00', 'Confirmed');
+
+
+
+INSERT INTO OrderDetails (OrderId, MenuItemId, Quantity, Price)
+VALUES 
+    (1, 1, 2, 4.99),  
+    (1, 3, 1, 6.50),  
+    (2, 2, 3, 12.99), 
+    (2, 5, 2, 5.99),  
+    (3, 4, 1, 3.99);
+
+
+INSERT INTO Orders (CreatedBy, updatedBy, PersonId, TableNumber, OrderDate, [Status], TotalAmount)
+VALUES 
+    ('Admin', NULL, 4, 12, '2025-03-05 19:00:00', 'Pending', 24.99),
+    ('Admin', NULL, 4, 5, '2025-03-06 20:00:00', 'Completed', 35.50),
+    ('Admin', NULL, 5, 8, '2025-03-07 18:30:00', 'Cancelled', 0.00),
+    ('Admin', NULL, 5, 3, '2025-03-08 21:00:00', 'Pending', 15.75),
+    ('Admin', NULL, 5, 7, '2025-03-09 17:45:00', 'Completed', 42.99);
+
+
+INSERT INTO StaffManagement (CreatedBy, updatedBy, PersonId, RoleId, ShiftTimingsId, Attendance, ContactDetails)
+VALUES 
+    ('Admin', NULL, 2, 1, 1, 'Present', '0987654321'),
+    ('Admin', NULL, 3, 2, 2, 'Absent', '1122334455')
+
+
+
+INSERT INTO StaffRoles VALUES ('Manager'), ('Chef'), ('Waiter'), ('Cashier'), ('Cleaning Staff');
+
+
+
+INSERT INTO ShiftTime ([Name], StartShiftTime, EndShiftTime)
+VALUES 
+    ('Morning Shift', '8:00 AM', '4:00 PM'),
+    ('Afternoon Shift', '4:00 PM', '12:00 AM'),
+    ('Night Shift', '12:00 AM', '8:00 AM');
+
+
+
+INSERT INTO CustomerFeedback (ReservationId, OrderId, CustomerId, Rating, Feedback, CreationDate)
+VALUES 
+(1, NULL, 5, 4, 'The food was great, but the service was a bit slow.', GETDATE());
+
+INSERT INTO CustomerFeedback (ReservationId, OrderId, CustomerId, Rating, Feedback, CreationDate)
+VALUES 
+(NULL, 3, 5, 5, 'Fantastic experience, would love to visit again!', GETDATE());
+
+

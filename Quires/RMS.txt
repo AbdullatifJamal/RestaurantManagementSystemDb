@@ -1,0 +1,220 @@
+Database Queries
+
+1)- Retrieve Menu by Category:
+Write a query to fetch all items under a specific category, including name, price,
+and availability.
+
+SELECT 
+    mi.Name AS MenuItem,
+    mi.Price,
+    mi.IsAvailable
+FROM MenuItems mi
+JOIN Category c ON mi.CategoryId = c.Id
+WHERE c.Name = 'Appetizers';
+
+
+-----------------------------------------------------
+
+2)- Daily Sales Report:
+Implement a query to calculate total sales, broken down by menu items and
+categories, for a specific date.
+
+SELECT c.Name AS Category, mi.Name AS MenuItem,
+
+    SUM(od.Quantity) AS TotalQuantity,
+    SUM(od.Quantity * od.Price) AS TotalSales
+
+FROM Orders o
+JOIN OrderDetails od ON o.Id = od.OrderId
+JOIN MenuItems mi ON od.MenuItemId = mi.Id
+JOIN Category c ON mi.CategoryId = c.Id
+WHERE CAST(o.OrderDate AS DATE) = '2025-03-06' 
+GROUP BY c.Name, mi.Name;
+
+-----------------------------------------------------
+
+3)- Reservation Schedule:
+Create a query to list all reservations for a selected date, including customer
+details and table assignments.
+
+SELECT CustomerName ,ContactDetails,TableNumber FROM Reservations WHERE CAST(ReservationDate AS DATE) = '2025-03-05';
+-----------------------------------------------------
+
+4)- Staff Attendance:
+Write a query to fetch attendance records for all staff over a specific timeframe.
+
+SELECT 
+    sm.PersonId, 
+    p.Name AS StaffName, 
+	 sm.Attendance,
+    st.Name AS ShiftName, 
+    st.StartShiftTime, 
+    st.EndShiftTime  
+FROM StaffManagement sm
+JOIN Person p ON sm.PersonId = p.Id
+JOIN ShiftTime st ON sm.ShiftTimingsId = st.Id
+WHERE CAST(sm.CreationDate AS DATE) = '2025-03-02';
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Database Views
+
+1)- Available Menu Items View:
+Create a view to display all currently available menu items, including category
+and price.
+
+
+CREATE VIEW AvailableMenuItems AS
+SELECT  
+    c.Name AS Category,
+    mi.Price
+FROM MenuItems mi
+JOIN Category c ON mi.CategoryId = c.Id
+WHERE mi.IsAvailable = 1;
+
+-----------------------------------------------------
+
+2)- Daily Reservations View:
+Implement a view to show all reservations for the current day, including table
+numbers and customer contact details.
+
+CREATE VIEW DailyReservations AS
+SELECT 
+    CustomerName, 
+    ContactDetails, 
+    TableNumber 
+FROM Reservations 
+WHERE CAST(ReservationDate AS DATE) = CAST(GETDATE() AS DATE); --used chatgpt for cast
+
+-----------------------------------------------------
+
+3)- Sales Summary View:
+Create a view summarizing sales by menu item and category, along with total
+revenue.
+
+CREATE VIEW SalesSummary AS
+SELECT 
+    c.Name AS Category,
+    mi.Name AS MenuItem,
+    SUM(od.Quantity) AS TotalQuantity,
+    SUM(od.Quantity * od.Price) AS TotalSales   --used chatgpt gpt
+FROM Orders o
+JOIN OrderDetails od ON o.Id = od.OrderId
+JOIN MenuItems mi ON od.MenuItemId = mi.Id
+JOIN Category c ON mi.CategoryId = c.Id
+GROUP BY c.Name, mi.Name;
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Stored Procedures
+
+1)- Add New Order:
+Write a stored procedure to add a customer’s order, including items, quantities,
+and calculating the total amount.
+
+CREATE PROCEDURE AddCustomerOrder
+    @PersonId INT,
+    @TableNumber INT,
+    @MenuItemId INT,
+    @Quantity INT
+AS
+BEGIN
+    DECLARE @OrderId INT;
+    DECLARE @TotalAmount DECIMAL(10,2);
+
+   
+    INSERT INTO Orders (PersonId, TableNumber, OrderDate, Status, TotalAmount)
+    VALUES (@PersonId, @TableNumber, GETDATE(), 'Pending', 0);
+
+  
+    SET @OrderId = SCOPE_IDENTITY(); --used chatgpt gpt 
+
+    
+    INSERT INTO OrderDetails (OrderId, MenuItemId, Quantity, Price)
+    SELECT @OrderId, Id, @Quantity, Price FROM MenuItems WHERE Id = @MenuItemId;
+
+   
+    SELECT @TotalAmount = SUM(od.Quantity * mi.Price)
+    FROM OrderDetails od
+    JOIN MenuItems mi ON od.MenuItemId = mi.Id
+    WHERE od.OrderId = @OrderId;
+
+   
+    UPDATE Orders
+    SET TotalAmount = @TotalAmount
+    WHERE Id = @OrderId;
+
+   
+END;
+
+	EXEC AddCustomerOrder 
+    @PersonId = 5,  
+    @TableNumber = 5,  
+    @MenuItemId = 2,  
+    @Quantity = 2;
+
+-----------------------------------------------------
+2)- Manage Reservations:
+Implement a stored procedure to add or update reservations, ensuring no table is
+double-booked.
+
+
+-----------------------------------------------------
+
+3)- Generate Staff Report:
+Create a stored procedure to generate a report of staff attendance and performance
+metrics.
+
+CREATE PROCEDURE GenerateStaffReport
+    @StartDate DATE,
+    @EndDate DATE
+AS
+BEGIN
+  
+    SELECT 
+        sm.PersonId,
+        p.Name AS StaffName,
+        sr.Name AS Role,
+        st.Name AS Shift,
+        COUNT(CASE WHEN sm.Attendance = 'Present' THEN 1 END) AS DaysPresent,  --used chatgpt 
+        COUNT(CASE WHEN sm.Attendance = 'Absent' THEN 1 END) AS DaysAbsent     --used chatgpt
+    FROM StaffManagement sm
+    JOIN Person p ON sm.PersonId = p.Id
+    JOIN StaffRoles sr ON sm.RoleId = sr.Id
+    JOIN ShiftTime st ON sm.ShiftTimingsId = st.Id
+    WHERE sm.CreationDate BETWEEN @StartDate AND @EndDate
+    GROUP BY sm.PersonId, p.Name, sr.Name, st.Name
+    
+    
+    
+END;
+
+EXEC GenerateStaffReport 
+    @StartDate = '2025-03-01', 
+    @EndDate = '2025-03-10';
+
+
+
+-----------------------------------------------------
+4)- Update Menu Availability:
+Write a stored procedure to update the availability status of menu items based on
+inventory or business decisions.
+
+
+	CREATE PROCEDURE UpdateMenuAvailability
+    @MenuItemId INT,
+    @IsAvailable BIT
+AS
+BEGIN
+   
+    UPDATE MenuItems
+    SET IsAvailable = @IsAvailable
+    WHERE Id = @MenuItemId;
+
+   
+END;
+
+EXEC UpdateMenuAvailability 
+    @MenuItemId = 3,  
+    @IsAvailable = 0;
+
+

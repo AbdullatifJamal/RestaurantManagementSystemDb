@@ -1,0 +1,30 @@
+
+CREATE VIEW AvailableMenuItems AS
+SELECT  
+    c.Name AS Category,
+    mi.Price
+FROM MenuItems mi
+JOIN Category c ON mi.CategoryId = c.Id
+WHERE mi.IsAvailable = 1;
+
+CREATE VIEW DailyReservations AS
+SELECT 
+    CustomerName, 
+    ContactDetails, 
+    TableNumber 
+FROM Reservations 
+WHERE CAST(ReservationDate AS DATE) = CAST(GETDATE() AS DATE);
+
+
+CREATE VIEW SalesSummary AS
+SELECT 
+    c.Name AS Category,
+    mi.Name AS MenuItem,
+    SUM(od.Quantity) AS TotalQuantity,
+    SUM(od.Quantity * od.Price) AS TotalSales
+FROM Orders o
+JOIN OrderDetails od ON o.Id = od.OrderId
+JOIN MenuItems mi ON od.MenuItemId = mi.Id
+JOIN Category c ON mi.CategoryId = c.Id
+
+GROUP BY c.Name, mi.Name;
